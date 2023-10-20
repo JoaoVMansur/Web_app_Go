@@ -61,7 +61,10 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "front.html")
 
+}
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
@@ -75,6 +78,7 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 }
 
 func main() {
+	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
 	http.HandleFunc("/save/", makeHandler(saveHandler))
