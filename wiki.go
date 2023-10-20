@@ -13,15 +13,15 @@ type Page struct {
 	Body  []byte
 }
 
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+var templates = template.Must(template.ParseFiles("tmpl/edit.html", "tmpl/view.html"))
 var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
 func (p *Page) save() error {
-	filename := p.Title + ".txt"
+	filename := "data/" + p.Title + ".txt"
 	return os.WriteFile(filename, p.Body, 0600)
 }
 func loadPage(title string) (*Page, error) {
-	filename := title + ".txt"
+	filename := "data/" + title + ".txt"
 	body, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -55,15 +55,15 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
 	}
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "tmpl/front.html")
+
+}
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "front.html")
-
 }
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
